@@ -343,6 +343,7 @@ const inputData = [
  
  export const data = inputData.map((el) => ({
   ...el,
+  completed: Math.floor(Math.random() * (100 - 0 + 1)) + 0,
   color: "#" +
     Math.round(0x1000000 + 0xffffff * Math.random()).toString(16).slice(1).toUpperCase(),
 }));
