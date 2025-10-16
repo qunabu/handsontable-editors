@@ -1,0 +1,28 @@
+{
+    "name": "handsontable-pr-javascript-demo",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.html",
+    "private": true,
+    "scripts": {
+        "start": "parcel *.html --open",
+        "build": "parcel build index.html"
+    },
+    "dependencies": {
+        "@eastdesire/jscolor": "^2.5.2",
+        "@melloware/coloris": "^0.25.0",
+        "alwan": "^2.3.0",
+        "handsontable": "latest",
+        "vanilla-picker": "^2.12.3"
+    },
+    "devDependencies": {
+        "parcel-bundler": "latest",
+        "typescript": "^5.9.3"
+    },
+    "keywords": [],
+    "config": {
+        "stackblitz": {
+            "template": "typescript"
+        }
+    }
+}
