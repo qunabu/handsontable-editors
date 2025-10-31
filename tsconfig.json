@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+"target": "es2020",
+    "module": "es2020",
+    "lib": ["es2020", "dom"],
+    "strict": true,
+    "noEmit": false,
+    "declarationMap": true,                          // Generate .d.ts.map for navigation
+    "rootDir": "./",                              // Source directory
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+      "declaration": true,
+      "emitDeclarationOnly": false,         // Only .d.ts, no .js files
+      "outDir": "./types"
+    },
+    "files": [
+        "src/factories.ts"
+      ]
+  }

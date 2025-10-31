@@ -2,7 +2,7 @@ import Handsontable from "handsontable";
 import "handsontable/dist/handsontable.full.min.css";
 import { registerAllModules } from "handsontable/registry";
 import { data } from "./src/data";
-import { editorBaseFactory, rendererFactory } from "./src/factories";
+import { editorFactory, rendererFactory } from "./src/factories";
 // Register all available Handsontable modules
 registerAllModules();
 
@@ -21,18 +21,20 @@ const cellDefinition = {
   validator: (value, callback) => {
     callback(value.length === 7 && value[0] == '#'); // validate color format
   },
-  editor: editorBaseFactory({
+  editor: editorFactory<{input: HTMLInputElement}>({
     init(editor) {
       // create the input element on init. This is a text input that color picker will be attached to.
-      editor.input = editor.hot.rootDocument.createElement("INPUT");
-      editor.input.classList.add("htSelectEditor");
+      editor.input = editor.hot.rootDocument.createElement("INPUT") as HTMLInputElement;
       editor.input.setAttribute('data-coloris', '');
-      editor.input.style.display = "none";
-      editor.hot.rootElement.appendChild(editor.input);
-      Coloris({closeButton:true, closeLabel:"Apply Colour"});
+    },
+    afterInit(editor) {
+      Coloris({el: editor.input, closeButton:true, closeLabel:"Apply Colour",  alpha: false, wrap: false});
       editor.input.addEventListener('close', (event) => {
         editor.finishEditing(); // close the color picker and save value on pressing "Apply Colour"
       });
+    },
+    afterOpen(editor) {
+      editor.input.click();
     },
     getValue(editor) {
       return editor.input.value;
@@ -40,17 +42,6 @@ const cellDefinition = {
     setValue(editor, value) {
       editor.input.value = value;
     },
-    open(editor) {
-      const rect = editor.getEditedCellRect();
-      editor.input.style = `display: block; border:none; padding:0; position: absolute; top: ${rect.top}px; left: ${rect.start}px; width: ${rect.width}px; height: ${rect.height}px;`;
-      editor.input.click(); // open the color picker
-    },
-    focus(editor) {
-      editor.input.focus();
-    },
-    close(editor) {
-      editor.input.style.display = 'none';
-    }
   }),
 };
 

@@ -6,14 +6,15 @@
     "private": true,
     "scripts": {
         "start": "parcel *.html --open",
-        "build": "parcel build index.html"
+        "build": "parcel build index.html",
+        "analyze": "parcel build src/index.html --reporter @parcel/reporter-bundle-analyzer"
     },
     "dependencies": {
-        "@eastdesire/jscolor": "^2.5.2",
         "@melloware/coloris": "^0.25.0",
-        "alwan": "^2.3.0",
+        "date-fns": "^4.1.0",
+        "flatpickr": "^4.6.13",
         "handsontable": "latest",
-        "vanilla-picker": "^2.12.3"
+        "multiple-select-vanilla": "^4.3.10"
     },
     "devDependencies": {
         "parcel-bundler": "latest",

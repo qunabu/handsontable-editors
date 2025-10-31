@@ -3,6 +3,9 @@ import "handsontable/dist/handsontable.full.min.css";
 import { registerAllModules } from "handsontable/registry";
 import { data } from "./src/data";
 import { editorBaseFactory, rendererFactory } from "./src/factories";
+
+//import "./src/libs/multiselect.ts";
+
 // Register all available Handsontable modules
 registerAllModules();
 
@@ -10,27 +13,20 @@ const container = document.querySelector("#handsontable-grid")!;
 
 const cellDefinition = {
   renderer: rendererFactory(({ td, value }) => {
-    td.style.backgroundColor = `${value}`;
-
     td.innerHTML = `<div><input style="pointer-events: none; width: 100%; padding: 0;" disabled readonly type="range" value="${value}" /></div>`;
-    //td.innerHTML = `<input disabled readonly type="range" value="${value}" />`;
-    //td.innerHTML = `${value}`;
     return td;
   }),
   validator: (value, callback) => {    
     value = parseInt(value);
     callback(value >= 0 && value <= 100);
-    //callback(value.length === 7 && value[0] == '#'); // validate color format
   },
-  editor: editorBaseFactory({
+  editor: editorBaseFactory<{wrapper: HTMLDivElement, input: HTMLInputElement}>({
     init(editor) {
       // create the input element on init. This is a text input that color picker will be attached to.
-      editor.wrapper = editor.hot.rootDocument.createElement("DIV");
+      editor.wrapper = editor.hot.rootDocument.createElement("DIV") as HTMLDivElement;
       editor.wrapper.style.display = "none";
       editor.wrapper.classList.add("htSelectEditor");
-      
-      editor.input = editor.hot.rootDocument.createElement("INPUT");
-      
+      editor.input = editor.hot.rootDocument.createElement("INPUT") as HTMLInputElement;      
       editor.input.setAttribute('type', 'range');
       editor.input.setAttribute('min', '0');
       editor.input.setAttribute('max', '100');
@@ -38,11 +34,11 @@ const cellDefinition = {
       editor.input.style = 'width: 100%; padding: 0;';
       editor.wrapper.appendChild(editor.input);
       editor.hot.rootElement.appendChild(editor.wrapper);
-    },
-    prepare(editor, row, col, prop, td, originalValue, cellProperties) {
-      console.log("originalValue", originalValue);
-      editor.input.value = originalValue;
-      //editor.open(editor)
+      editor.input.addEventListener('input', (event) => {
+        if (editor.TD) {
+          editor.TD.querySelector('input')!.value = (event.target as HTMLInputElement).value;
+        }
+      });
     },
     getValue(editor) {
       return editor.input.value;
