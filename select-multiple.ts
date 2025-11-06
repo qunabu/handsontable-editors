@@ -2,7 +2,7 @@ import Handsontable from "handsontable";
 import "handsontable/dist/handsontable.full.min.css";
 import { registerAllModules } from "handsontable/registry";
 import { components, coutries, data } from "./src/data";
-import { editorBaseFactory, rendererFactory } from "./src/factories";
+import { editorBaseFactory, rendererFactory, editorFactory } from "./src/factories";
 import { multipleSelect, MultipleSelectInstance } from "multiple-select-vanilla";
 import "multiple-select-vanilla/dist/styles/css/multiple-select.css";
 registerAllModules();
@@ -16,24 +16,22 @@ const cellDefinition = {
       : "No elements";
     return td;
   }),
-  editor: editorBaseFactory<{wrapper: HTMLDivElement, input: HTMLSelectElement, multiselect: MultipleSelectInstance}>({
+  editor: editorFactory<{input: HTMLSelectElement, multiselect: MultipleSelectInstance}>({
     init(editor) {
-      // create the input element on init. This is a text input that color picker will be attached to.
-      editor.wrapper = editor.hot.rootDocument.createElement("DIV") as HTMLDivElement;
-      editor.wrapper.style.display = "none";
-      editor.wrapper.classList.add("htSelectEditor");
       editor.input = editor.hot.rootDocument.createElement("SELECT") as HTMLSelectElement;
       editor.input.setAttribute("multiple", "multiple");
       editor.input.setAttribute("data-multi-select", "");
-      editor.wrapper.appendChild(editor.input);
-      editor.hot.rootElement.appendChild(editor.wrapper);
       editor.multiselect = multipleSelect(editor.input) as MultipleSelectInstance;
     },
-    prepare(editor, row, col, prop, td, originalValue, cellProperties) {
+
+    beforeOpen(editor, { cellProperties} ) {
       editor.input.innerHTML = cellProperties?.selectMultipleOptions?.map((
         el: { value: string; label: string },
       ) => `<option value="${el.value}">${el.label}</option>`).join("");
       editor.multiselect.refresh();
+    },
+    afterOpen(editor) {
+      editor.multiselect.open();
     },
     getValue(editor) {
       return Array.from(editor.input.options).filter((option) =>
@@ -50,18 +48,7 @@ const cellDefinition = {
       );
       editor.multiselect.refresh();
     },
-    open(editor) {
-      const rect = editor.getEditedCellRect();
-      editor.wrapper.style =
-        `display: block; min-height: 200px; border:none; box-sizing: border-box; margin:0; padding:0 4px; position: absolute; top: ${rect.top}px; left: ${rect.start}px; width: ${rect.width}px; height: ${rect.height}px;`;
-      editor.multiselect.open();
-    },
-    focus(editor) {
-      editor.input.focus();
-    },
-    close(editor) {
-      editor.wrapper.style.display = "none";
-    },
+    
   }),
 };
 
@@ -94,8 +81,6 @@ new Handsontable(container, {
       width: 150,
       allowInvalid: false,
       ...cellDefinition,
-      // TODO fix ts types style to allow this to work, or add additional prop to cellDefinition
-      // @ts-ignore 
       selectMultipleOptions: coutries,
     },
   ],

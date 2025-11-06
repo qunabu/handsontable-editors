@@ -43,6 +43,9 @@ const cellDefinition = {
         }        
       });
     },
+    afterClose(editor) {
+      console.log('afterClose');
+    },
     beforeOpen(editor, { originalValue, cellProperties }) {
       editor.setValue(originalValue);
       for (const key in cellProperties.flatpickrSettings) {

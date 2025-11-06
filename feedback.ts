@@ -4,6 +4,10 @@ import { registerAllModules } from "handsontable/registry";
 import { data } from "./src/data";
 import { editorFactory, rendererFactory } from "./src/factories";
 
+// import { baseRenderer } from "handsontable/renderers";
+
+// console.log(baseRenderer);
+
 
 // Register all available Handsontable modules
 registerAllModules();
@@ -23,13 +27,23 @@ const cellDefinition = {
   editor: editorFactory<{input: HTMLDivElement, value: string, config: string[]}>({
     config: ['👍', '👎', '🤷‍♂️'],
     value: '👍',
+    // onKeyDown: (editor, event) => {
+    //   if (event.key === 'Tab') {
+    //   let index = editor.config.indexOf(editor.value);
+    //         index = index === editor.config.length - 1 ? 0 : index + 1;
+    //     editor.setValue(editor.config[index]);
+    //     return false;
+    //   }
+    //   return true;
+    // },
     shortcuts: [
       {
-        keys: [['ArrowRight']],
-        callback: (editor, _event) => {
+        keys: [['ArrowRight'], ['Tab']],
+        callback: (editor, _event) => {          
           let index = editor.config.indexOf(editor.value);
           index = index === editor.config.length - 1 ? 0 : index + 1;
-          editor.setValue(editor.config[index]);  
+          editor.setValue(editor.config[index]);    
+          return false;
         }
       }, 
       {
@@ -58,35 +72,43 @@ const cellDefinition = {
     beforeOpen:(editor, { originalValue }) => {
       editor.setValue( originalValue);
     },
-    // afterOpen:(editor) => {
-    //   editor.render(editor);      
-    // }, 
   })
 
 };
 
 
-new Handsontable(container, {
+// const data: (string | number)[][] = [
+//   ['', 'Tesla', 'Nissan', 'Toyota', 'Honda', 'Mazda', 'Ford'],
+//   ['2017', 10, 11, 12, 13, 15, 16],
+//   ['2018', 10, 11, 12, 13, 15, 16],
+//   ['2019', 10, 11, 12, 13, 15, 16],
+//   ['2020', 10, 11, 12, 13, 15, 16],
+//   ['2021', 10, 11, 12, 13, 15, 16],
+// ];
+// Define configuration options for the Handsontable
+const hotOptions: Handsontable.GridSettings = {
+  themeName: 'ht-theme-main',
   data,
-  colHeaders: [
-    "ID",
-    "Item Name",
-    "Feedback",
-  ],
+  colHeaders: ['ID', 'Item Name', 'Item feedback'],
   autoRowSize: true,
   rowHeaders: true,
+  autoWrapRow: true,
+  height: 'auto',
   columns: [
-    { data: "id", type: "numeric", width: 150 },
+    { data: 'id', type: 'numeric' },
     {
-      data: "itemName",
-      type: "text",
-      width: 150,
+      data: 'itemName',
+      type: 'text',
     },
     {
-      data: "feedback",
+      data: 'feedback',
       width: 150,
       ...cellDefinition,
-    }
+    },
   ],
-  licenseKey: "non-commercial-and-evaluation",
-});
+  licenseKey: 'non-commercial-and-evaluation',
+};
+
+// Initialize the Handsontable instance with the specified configuration options
+// eslint-disable-next-line no-unused-vars
+const hot = new Handsontable(container, hotOptions);

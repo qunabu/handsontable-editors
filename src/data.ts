@@ -606,6 +606,7 @@ const inputData = [
 export const data = inputData.map((el) => ({
   ...el,
   completed: Math.floor(Math.random() * (100 - 0 + 1)) + 0,
+  stars: Math.floor(Math.random() * (5)) + 1,
   components: components.map(function (n) {
     return [Math.random(), n];
   })

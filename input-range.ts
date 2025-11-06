@@ -2,7 +2,7 @@ import Handsontable from "handsontable";
 import "handsontable/dist/handsontable.full.min.css";
 import { registerAllModules } from "handsontable/registry";
 import { data } from "./src/data";
-import { editorBaseFactory, rendererFactory } from "./src/factories";
+import { editorBaseFactory, rendererFactory, editorFactory } from "./src/factories";
 
 //import "./src/libs/multiselect.ts";
 
@@ -13,49 +13,57 @@ const container = document.querySelector("#handsontable-grid")!;
 
 const cellDefinition = {
   renderer: rendererFactory(({ td, value }) => {
-    td.innerHTML = `<div><input style="pointer-events: none; width: 100%; padding: 0;" disabled readonly type="range" value="${value}" /></div>`;
+    td.innerHTML = Array.from({ length: 5 }, (_, index) => `<span style="opacity: ${index < value ? '1' : '0.4'}">⭐</span>`).join('');
     return td;
   }),
   validator: (value, callback) => {    
     value = parseInt(value);
     callback(value >= 0 && value <= 100);
   },
-  editor: editorBaseFactory<{wrapper: HTMLDivElement, input: HTMLInputElement}>({
+  
+  editor: editorFactory<{ input: HTMLDivElement}>({
+    shortcuts: [
+      {
+        keys: [['1'], ['2'], ['3'], ['4'], ['5']],
+        callback: (editor, _event) => {
+          editor.setValue( (_event as KeyboardEvent).key);           
+        }
+      }, 
+      {
+        keys: [['ArrowRight']],
+        callback: (editor, _event) => {
+          if (parseInt(editor.value) < 5) {
+            editor.setValue( parseInt(editor.value) + 1);  
+          } 
+        }
+      }, 
+      {
+        keys: [['ArrowLeft']],
+        callback: (editor, _event) => {
+          if (parseInt(editor.value) > 1) {
+            editor.setValue( parseInt(editor.value) - 1);  
+          }  
+        }
+      }
+    ],
     init(editor) {
-      // create the input element on init. This is a text input that color picker will be attached to.
-      editor.wrapper = editor.hot.rootDocument.createElement("DIV") as HTMLDivElement;
-      editor.wrapper.style.display = "none";
-      editor.wrapper.classList.add("htSelectEditor");
-      editor.input = editor.hot.rootDocument.createElement("INPUT") as HTMLInputElement;      
-      editor.input.setAttribute('type', 'range');
-      editor.input.setAttribute('min', '0');
-      editor.input.setAttribute('max', '100');
-      editor.input.setAttribute('step', '1');
-      editor.input.style = 'width: 100%; padding: 0;';
-      editor.wrapper.appendChild(editor.input);
-      editor.hot.rootElement.appendChild(editor.wrapper);
-      editor.input.addEventListener('input', (event) => {
-        if (editor.TD) {
-          editor.TD.querySelector('input')!.value = (event.target as HTMLInputElement).value;
+      editor.input = editor.hot.rootDocument.createElement("DIV") as HTMLDivElement;      
+      editor.input.style = 'background: #eee; padding: 4px 5px; cursor: pointer; border-radius: 4px; font-size: 16px;';     
+    },
+    afterInit(editor) {
+      editor.input.addEventListener('mouseover', (event) => {
+        if (event.target instanceof HTMLSpanElement && event.target.dataset.value && parseInt(editor.value) !== parseInt(event.target.dataset.value)) {
+          editor.setValue(event.target.dataset.value);
         }
       });
+      editor.input.addEventListener('mousedown', () => {
+        editor.finishEditing();
+      })
     },
-    getValue(editor) {
-      return editor.input.value;
+    render(editor) {
+      editor.input.innerHTML = Array.from({ length: 5 }, (_, index) => `<span data-value="${index + 1}" style="opacity: ${index < editor.value ? '1' : '0.4'}">⭐</span>`).join('');
     },
-    setValue(editor, value) {
-      editor.input.value = value;
-    },
-    open(editor) {
-      const rect = editor.getEditedCellRect();
-      editor.wrapper.style = `display: block; border:none; box-sizing: border-box; margin:0; padding:0 4px; position: absolute; top: ${rect.top}px; left: ${rect.start}px; width: ${rect.width}px; height: ${rect.height}px;`;
-    },
-    focus(editor) {
-      editor.input.focus();
-    },
-    close(editor) {
-      editor.wrapper.style.display = 'none';
-    }
+    
   }),
 };
 
@@ -65,7 +73,7 @@ new Handsontable(container, {
   colHeaders: [
     "ID",
     "Item Name",
-    "Completed percentage",
+    "Rating",
   ],
   autoRowSize: true,
   rowHeaders: true,
@@ -77,7 +85,7 @@ new Handsontable(container, {
       width: 150,
     },
     {
-      data: "completed",
+      data: "stars",
       width: 150,
       allowInvalid: false,
       ...cellDefinition,
