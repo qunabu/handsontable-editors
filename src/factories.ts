@@ -2,8 +2,6 @@ import Handsontable from "handsontable";
 import { BaseEditor } from "handsontable/editors";
 //import { ShortcutManager  } from "handsontable/shortcuts/manager.d.ts";
 
-
-
 /**
  * Factory function for creating custom Handsontable editors by extending BaseEditor.
  *
@@ -306,21 +304,27 @@ export const rendererFactory = (
 };
 // }
 
-type ExtendedEditor<T> = BaseEditor 
-& { render: (editor: ExtendedEditor<T>) => void, value?: any, config?: any, container: HTMLDivElement } 
-& T
+type ExtendedEditor<T> =
+    & BaseEditor
+    & {
+        render: (editor: ExtendedEditor<T>) => void;
+        value?: any;
+        config?: any;
+        container: HTMLDivElement;
+    }
+    & T;
 
 /**
  * Factory function to create a custom Handsontable editor.
  *
- * `editorFactory` helps you create modular, reusable, and fully custom editors 
- * for Handsontable grid cells. The factory handles lifecycle, DOM structure, and 
+ * `editorFactory` helps you create modular, reusable, and fully custom editors
+ * for Handsontable grid cells. The factory handles lifecycle, DOM structure, and
  * keyboard shortcuts, allowing you to focus on business-specific UI and value logic.
  *
  * @template T The custom type extending editor interface for your editor instance.
  *
  * @param {object} options - Configuration and lifecycle methods for the editor.
- * @param {(editor: ExtendedEditor<T>) => void} options.init 
+ * @param {(editor: ExtendedEditor<T>) => void} options.init
  *        Required. Initialization logic. Assigns and sets up the editor input (and other UI).
  * @param {(editor: ExtendedEditor<T>) => void} [options.afterOpen]
  *        Optional. Called after the editor is opened and made visible.
@@ -345,9 +349,9 @@ type ExtendedEditor<T> = BaseEditor
  *        Optional. Configuration or options for the editor (e.g. list of choices).
  * @param {(editor: ExtendedEditor<T>) => void} [options.render]
  *        Optional. Function to refresh/render your editor UI from state/value.
- * @param {...object} [args] Any additional custom fields or helpers you want mixed into the editor instance. 
+ * @param {...object} [args] Any additional custom fields or helpers you want mixed into the editor instance.
  *
- * @returns {Function} Returns an object compatible with Handsontable editor interface, handling initialization, 
+ * @returns {Function} Returns an object compatible with Handsontable editor interface, handling initialization,
  *             value/DOM mapping, shortcut binding, editor lifecycle, and cleanup.
  *
  * @example
@@ -362,7 +366,7 @@ type ExtendedEditor<T> = BaseEditor
  *   render(editor) { ... },
  *   shortcuts: [...]
  * });
- * 
+ *
  * // In Handsontable columns config:
  * { data: "feedback", editor: emojiEditor }
  */
@@ -376,13 +380,13 @@ export const editorFactory = <T>({
     setValue,
     onFocus,
     shortcuts,
-    value, 
+    value,
     render,
     config,
     ...args
 }: {
-    value?: T extends { value: any } ? T['value'] : any;
-    config?: T extends { config: any } ? T['config'] : any;
+    value?: T extends { value: any } ? T["value"] : any;
+    config?: T extends { config: any } ? T["config"] : any;
     render?: (editor: ExtendedEditor<T>) => void;
     init: (editor: ExtendedEditor<T>) => void;
     afterOpen?: (editor: ExtendedEditor<T>) => void;
@@ -415,10 +419,10 @@ export const editorFactory = <T>({
         preventDefault?: boolean;
         stopPropagation?: boolean;
         relativeToGroup?: string;
-        position?: 'before' | 'after';
+        position?: "before" | "after";
         forwardToContext?: any;
-        // TODO Context type is not exported nu hpot 
-    }[]
+        // TODO Context type is not exported nu hpot
+    }[];
 } & Record<string, any>) => {
     /**
      * Unique group name for shortcut registrations for this editor instance.
@@ -441,8 +445,9 @@ export const editorFactory = <T>({
             editorContext.addShortcuts(
                 shortcuts.map((shortcut) => ({
                     ...shortcut,
-                    relativeToGroup: shortcut.relativeToGroup || 'editorManager.handlingEditor',
-                    position: shortcut.position || 'before',
+                    relativeToGroup: shortcut.relativeToGroup ||
+                        "editorManager.handlingEditor",
+                    position: shortcut.position || "before",
                     callback: (event: KeyboardEvent) =>
                         shortcut.callback(editor, event),
                 })),
@@ -450,17 +455,15 @@ export const editorFactory = <T>({
                 contextConfig,
             );
         }
-        // if (onKeyDown) {
-        //     (editor as ExtendedEditor._beforeKeyDown = (event) => {
-        //         return onKeyDown(editor, event);                
-        //     };
-        //     editor.hot.addHook('beforeKeyDown', editor._beforeKeyDown);
-        // }
     };
 
     // Compose the Handsontable editor definition using the core editorBaseFactory:
     return editorBaseFactory<
-        ExtendedEditor<T> & { container: HTMLDivElement; _open: boolean; input: HTMLElement }
+        ExtendedEditor<T> & {
+            container: HTMLDivElement;
+            _open: boolean;
+            input: HTMLElement;
+        }
     >({
         /**
          * Called when this editor is constructed by the Handsontable grid.
@@ -469,10 +472,12 @@ export const editorFactory = <T>({
         init(editor) {
             Object.assign(editor, { value, config, render, ...args });
             editor._open = false;
-            editor.container = editor.hot.rootDocument.createElement("DIV") as HTMLDivElement;
+            editor.container = editor.hot.rootDocument.createElement(
+                "DIV",
+            ) as HTMLDivElement;
             editor.container.style.display = "none";
             editor.container.classList.add("htSelectEditor");
-            editor.hot.rootElement.appendChild(editor.container);    
+            editor.hot.rootElement.appendChild(editor.container);
             init(editor);
             if (!editor.input) {
                 console.error("input not found");
@@ -509,8 +514,8 @@ export const editorFactory = <T>({
          */
         open(editor) {
             const rect = editor.getEditedCellRect()!;
-            editor.container.style.display = 'block';   
-            editor.container.style.position = 'absolute';
+            editor.container.style.display = "block";
+            editor.container.style.position = "absolute";
             editor.container.style.top = `${rect.top}px`;
             editor.container.style.left = `${rect.start}px`;
             editor.container.style.width = `${rect.width}px`;
@@ -521,15 +526,11 @@ export const editorFactory = <T>({
                     afterOpen(editor);
                 });
             }
-     
+
             editor._open = true;
-            
+
             editor.hot.getShortcutManager().setActiveContextName("editor");
             registerShortcuts(editor);
-            
-
-            window._shortcutManager = editor.hot.getShortcutManager();
-
         },
         /**
          * Focus on the correct UI element within your editor.
@@ -540,7 +541,7 @@ export const editorFactory = <T>({
             } else {
                 editor.container.querySelector(
                     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-                //@ts-ignore
+                    //@ts-ignore
                 )?.focus();
             }
         },
@@ -555,12 +556,7 @@ export const editorFactory = <T>({
             const shortcutManager = editor.hot.getShortcutManager();
             const editorContext = shortcutManager.getContext("editor")!;
             //editorContext.re
-            editorContext.removeShortcutsByGroup(SHORTCUTS_GROUP); 
-            
-            // if (onKeyDown) {
-            //     // @ts-ignore
-            //     editor.hot.removeHook('beforeKeyDown', editor._beforeKeyDown);
-            // }
+            editorContext.removeShortcutsByGroup(SHORTCUTS_GROUP);
 
             if (typeof afterClose === "function") {
                 afterClose(editor);
