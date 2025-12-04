@@ -7,13 +7,16 @@
     "scripts": {
         "start": "parcel *.html --open",
         "build": "parcel build index.html",
-        "analyze": "parcel build src/index.html --reporter @parcel/reporter-bundle-analyzer"
+        "analyze": "parcel build src/index.html --reporter @parcel/reporter-bundle-analyzer",
+        "compile": "tsc"
     },
     "dependencies": {
+        "@handsontable/pikaday": "^1.0.0",
         "@melloware/coloris": "^0.25.0",
         "date-fns": "^4.1.0",
         "flatpickr": "^4.6.13",
         "handsontable": "latest",
+        "moment": "^2.30.1",
         "multiple-select-vanilla": "^4.3.10"
     },
     "devDependencies": {

@@ -1,7 +1,5 @@
 import Handsontable from "handsontable";
-import { BaseEditor } from "handsontable/editors";
 //import { ShortcutManager  } from "handsontable/shortcuts/manager.d.ts";
-
 /**
  * Factory function for creating custom Handsontable editors by extending BaseEditor.
  *
@@ -54,150 +52,8 @@ import { BaseEditor } from "handsontable/editors";
  * });
  * ```
  */
-export const editorBaseFactory = <T>(
-    params: {
-        prepare?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.prepare
-            >
-        ) => void;
-        beginEditing?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.beginEditing
-            >
-        ) => void;
-        finishEditing?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.finishEditing
-            >
-        ) => void;
-        discardEditor?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.discardEditor
-            >
-        ) => void;
-        saveValue?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.saveValue
-            >
-        ) => void;
-        getValue?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.getValue
-            >
-        ) => any;
-        setValue?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.saveValue
-            >
-        ) => void;
-        open?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.open
-            >
-        ) => void;
-        close?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.close
-            >
-        ) => void;
-        focus?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.focus
-            >
-        ) => void;
-        cancelChanges?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.cancelChanges
-            >
-        ) => void;
-        checkEditorSection?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.checkEditorSection
-            >
-        ) =>
-            | "top-left-corner"
-            | "top"
-            | "bottom-left-corner"
-            | "bottom"
-            | "left"
-            | "";
-        enableFullEditMode?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.enableFullEditMode
-            >
-        ) => void;
-        extend?(
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.extend
-            >
-        ): BaseEditor;
-        getEditedCell?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.getEditedCell
-            >
-        ) => HTMLTableCellElement | null;
-        getEditedCellRect?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.getEditedCellRect
-            >
-        ) => {
-            top: number;
-            start: number;
-            width: number;
-            maxWidth: number;
-            height: number;
-            maxHeight: number;
-        } | undefined;
-        getEditedCellsZIndex?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.getEditedCellsZIndex
-            >
-        ) => string;
-        init?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.init
-            >
-        ) => void;
-        isInFullEditMode?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.isInFullEditMode
-            >
-        ) => boolean;
-        isOpened?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.isOpened
-            >
-        ) => boolean;
-        isWaiting?: (
-            editor: BaseEditor & T,
-            ...args: Parameters<
-                typeof Handsontable.editors.BaseEditor.prototype.isWaiting
-            >
-        ) => boolean;
-    } & Record<string, (editor: BaseEditor & T, ...args: any[]) => void>,
-) => {
+export const editorBaseFactory = (params) => {
     const CustomBaseEditor = Handsontable.editors.BaseEditor.prototype.extend();
-
     // Skip super in abstract funtions
     const skipSuperApply = [
         "close",
@@ -206,43 +62,28 @@ export const editorBaseFactory = <T>(
         "open",
         "setValue",
     ];
-
-    const prototypeFns = Object.getOwnPropertyNames(
-        Handsontable.editors.BaseEditor.prototype,
-    ) as (keyof BaseEditor)[];
-
+    const prototypeFns = Object.getOwnPropertyNames(Handsontable.editors.BaseEditor.prototype);
     // Apply editor class methods from params object
     for (const fnName of prototypeFns) {
         if (params[fnName]) {
-            const superFn: Function =
-                (CustomBaseEditor.prototype as Record<string, any>)[
-                    fnName as keyof BaseEditor
-                ];
-
-            (CustomBaseEditor.prototype as Record<string, any>)[
-                fnName as keyof BaseEditor
-            ] = function (...args: any[]) {
+            const superFn = CustomBaseEditor.prototype[fnName];
+            CustomBaseEditor.prototype[fnName] = function (...args) {
                 !skipSuperApply.includes(fnName) && superFn.apply(this, args);
-                return params[fnName]!(this as BaseEditor & T, ...args);
+                return params[fnName](this, ...args);
             };
         }
     }
-
     // Apply custom methods
     for (const fnName of Object.keys(params)) {
-        if (!prototypeFns.includes(fnName as keyof BaseEditor)) {
-            (CustomBaseEditor.prototype as Record<string, any>)[
-                fnName as keyof BaseEditor
-            ] = function (...args: any[]) {
+        if (!prototypeFns.includes(fnName)) {
+            CustomBaseEditor.prototype[fnName] = function (...args) {
                 // `this` will be BaseEditor & T, as expected for custom methods.
-                return params[fnName]!(this as BaseEditor & T, ...args);
+                return params[fnName](this, ...args);
             };
         }
     }
-
     return CustomBaseEditor;
 };
-
 /**
  * Factory function for creating custom Handsontable cell renderers.
  *
@@ -277,44 +118,11 @@ export const editorBaseFactory = <T>(
  * }];
  * ```
  */
-export const rendererFactory = (
-    callback: (
-        { instance, td, row, column, prop, value, cellProperties }: {
-            instance: Handsontable.Core;
-            td: HTMLTableCellElement;
-            row: number;
-            column: number;
-            prop: string | number;
-            value: any;
-            cellProperties: Handsontable.CellProperties;
-        },
-    ) => void,
-) => {
-    return (
-        instance: Handsontable.Core,
-        td: HTMLTableCellElement,
-        row: number,
-        column: number,
-        prop: string | number,
-        value: any,
-        cellProperties: Handsontable.CellProperties,
-    ) => {
+export const rendererFactory = (callback) => {
+    return (instance, td, row, column, prop, value, cellProperties) => {
         callback({ instance, td, row, column, prop, value, cellProperties });
     };
 };
-// }
-
-type ExtendedEditor<T> =
-    & BaseEditor
-    & {
-        render: (editor: ExtendedEditor<T>) => void;
-        value?: any;
-        config?: any;
-        container: HTMLDivElement;
-        position: "containter" | "portal"
-    }
-    & T;
-
 /**
  * Factory function to create a custom Handsontable editor.
  *
@@ -371,99 +179,31 @@ type ExtendedEditor<T> =
  * // In Handsontable columns config:
  * { data: "feedback", editor: emojiEditor }
  */
-export const editorFactory = <T>({
-    init,
-    afterOpen,
-    afterInit,
-    afterClose,
-    beforeOpen,
-    getValue,
-    setValue,
-    onFocus,
-    shortcuts,
-    value,
-    render,
-    config,
-    shortcutsGroup = "custom-editor",
-    position = "container",
-    ...args
-}: {
-    position?: "container" | "portal";
-    value?: T extends { value: any } ? T["value"] : any;
-    config?: T extends { config: any } ? T["config"] : any;
-    render?: (editor: ExtendedEditor<T>) => void;
-    init: (editor: ExtendedEditor<T>) => void;
-    afterOpen?: (editor: ExtendedEditor<T>, event?: Event | undefined) => void;
-    afterClose?: (editor: ExtendedEditor<T>) => void;
-    afterInit?: (editor: ExtendedEditor<T>) => void;
-    beforeOpen?: (editor: ExtendedEditor<T>, {
-        row,
-        col,
-        prop,
-        td,
-        originalValue,
-        cellProperties,
-    }: {
-        row: number;
-        col: number;
-        prop: string | number;
-        td: HTMLTableCellElement;
-        originalValue: any;
-        cellProperties: Handsontable.CellProperties;
-    }) => void;
-    getValue?: (editor: ExtendedEditor<T>) => any;
-    setValue?: (editor: ExtendedEditor<T>, value: any) => void;
-    onFocus?: (editor: ExtendedEditor<T>) => void;
-    shortcutsGroup?: string;
-    shortcuts?: {
-        keys: string[][];
-        callback: (editor: ExtendedEditor<T>, event: Event) => boolean | void;
-        group?: string;
-        runOnlyIf?: () => boolean;
-        captureCtrl?: boolean;
-        preventDefault?: boolean;
-        stopPropagation?: boolean;
-        relativeToGroup?: string;
-        position?: "before" | "after";
-        forwardToContext?: any;
-        // TODO Context type is not exported nu hpot
-    }[];
-} & Record<string, any>) => {
-   
+export const editorFactory = ({ init, afterOpen, afterInit, afterClose, beforeOpen, getValue, setValue, onFocus, shortcuts, value, render, config, shortcutsGroup = "custom-editor", position = "container", ...args }) => {
     /**
      * Register all configured keyboard shortcuts for this editor instance.
      * @private
      */
-    const registerShortcuts = (editor: ExtendedEditor<T>) => {
+    const registerShortcuts = (editor) => {
         const shortcutManager = editor.hot.getShortcutManager();
-        const editorContext = shortcutManager.getContext("editor")!;
+        const editorContext = shortcutManager.getContext("editor");
         const contextConfig = {
             group: shortcutsGroup,
         };
         if (shortcuts) {
-            editorContext.addShortcuts(
-                shortcuts.map((shortcut) => ({
-                    ...shortcut,
-                    relativeToGroup: shortcut.relativeToGroup ||
-                        "editorManager.handlingEditor",
-                    position: shortcut.position || "before",
-                    callback: (event: KeyboardEvent) =>
-                        shortcut.callback(editor, event),
-                })),
-                //@ts-ignore
-                contextConfig,
-            );
+            editorContext.addShortcuts(shortcuts.map((shortcut) => ({
+                ...shortcut,
+                relativeToGroup: shortcut.relativeToGroup ||
+                    "editorManager.handlingEditor",
+                position: shortcut.position || "before",
+                callback: (event) => shortcut.callback(editor, event),
+            })), 
+            //@ts-ignore
+            contextConfig);
         }
     };
-
     // Compose the Handsontable editor definition using the core editorBaseFactory:
-    return editorBaseFactory<
-        ExtendedEditor<T> & {
-            container: HTMLDivElement;
-            _open: boolean;
-            input: HTMLElement;
-        }
-    >({
+    return editorBaseFactory({
         /**
          * Called when this editor is constructed by the Handsontable grid.
          * Assigns value/config/render/etc, creates UI container, initializes with provided init.
@@ -471,9 +211,7 @@ export const editorFactory = <T>({
         init(editor) {
             Object.assign(editor, { value, config, render, position, ...args });
             editor._open = false;
-            editor.container = editor.hot.rootDocument.createElement(
-                "DIV",
-            ) as HTMLDivElement;
+            editor.container = editor.hot.rootDocument.createElement("DIV");
             editor.container.style.display = "none";
             editor.container.classList.add("htSelectEditor");
             editor.hot.rootElement.appendChild(editor.container);
@@ -484,7 +222,8 @@ export const editorFactory = <T>({
             if (position === "portal") {
                 //@ts-ignore
                 editor.hot.rootPortalElement.appendChild(editor.container);
-            } else {
+            }
+            else {
                 editor.hot.rootElement.appendChild(editor.container);
             }
             editor.container.appendChild(editor.input);
@@ -507,7 +246,8 @@ export const editorFactory = <T>({
         setValue(editor, value) {
             if (typeof setValue === "function") {
                 setValue(editor, value);
-            } else {
+            }
+            else {
                 editor.value = value;
             }
             if (typeof render === "function") {
@@ -518,29 +258,27 @@ export const editorFactory = <T>({
          * Opens the editor, making the container visible and binding shortcuts.
          */
         open(editor, event = undefined) {
-            const rect = editor.getEditedCellRect()!;
+            const rect = editor.getEditedCellRect();
             editor.container.style.display = "block";
             editor.container.style.position = "absolute";
             if (editor.position === "portal") {
                 const offset = editor.TD.getBoundingClientRect();
                 editor.container.style.top = `${editor.hot.rootWindow.pageYOffset + offset.top}px`;
                 editor.container.style.left = `${editor.hot.rootWindow.pageXOffset + offset.left}px`;
-            } else {
+            }
+            else {
                 editor.container.style.top = `${rect.top}px`;
                 editor.container.style.left = `${rect.start}px`;
                 editor.container.style.width = `${rect.width}px`;
                 editor.container.style.height = `${rect.height}px`;
             }
-           
             editor.container.classList.add("ht_editor_visible");
             // if (afterOpen) {
             //     window.requestAnimationFrame(() => {
             //         afterOpen(editor, event);
             //     });
             // }
-
             editor._open = true;
-
             editor.hot.getShortcutManager().setActiveContextName("editor");
             registerShortcuts(editor);
             if (afterOpen) {
@@ -553,11 +291,9 @@ export const editorFactory = <T>({
         focus(editor) {
             if (typeof onFocus === "function") {
                 onFocus(editor);
-            } else {
-                editor.container.querySelector(
-                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-                    //@ts-ignore
-                )?.focus();
+            }
+            else {
+                editor.container.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')?.focus();
             }
         },
         /**
@@ -567,12 +303,10 @@ export const editorFactory = <T>({
             editor._open = false;
             editor.container.style.display = "none";
             editor.container.classList.remove("ht_editor_visible");
-
             const shortcutManager = editor.hot.getShortcutManager();
-            const editorContext = shortcutManager.getContext("editor")!;
+            const editorContext = shortcutManager.getContext("editor");
             //editorContext.re
             editorContext.removeShortcutsByGroup(shortcutsGroup);
-
             if (typeof afterClose === "function") {
                 afterClose(editor);
             }
@@ -590,7 +324,8 @@ export const editorFactory = <T>({
                     originalValue,
                     cellProperties,
                 });
-            } else {
+            }
+            else {
                 editor.setValue(originalValue);
             }
         },
