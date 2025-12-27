@@ -158,6 +158,8 @@ export const rendererFactory = (callback) => {
  *        Optional. Configuration or options for the editor (e.g. list of choices).
  * @param {(editor: ExtendedEditor<T>) => void} [options.render]
  *        Optional. Function to refresh/render your editor UI from state/value.
+ * @param {string} [options.position] 
+ *  The position of the editor. Either 'container' (default) or 'portal' (for elements outside of the table container viewport).
  * @param {...object} [args] Any additional custom fields or helpers you want mixed into the editor instance.
  *
  * @returns {Function} Returns an object compatible with Handsontable editor interface, handling initialization,

@@ -1,0 +1,70 @@
+
+    .color-picker-editor {
+      box-sizing: border-box;
+      /* display: flex;
+      align-items: center; */
+      gap: 8px;
+      padding: 4px 8px;
+      background: rgb(255, 255, 255);
+      border: 1px solid rgb(204, 204, 204);
+      border-radius: 4px;
+      height: 100%;
+      width: 100%;
+      position: relative;
+    }
+    .color-preview {
+      width: 32px;
+      height: 24px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .color-value {
+      flex: 1;
+      font-family: monospace;
+      font-size: 12px;
+      color: #333;
+      border: none;
+      outline: none;
+      background: transparent;
+    }
+    .picker-container {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+      z-index: 1000;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .picker-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      justify-content: flex-end;
+    }
+    .picker-button {
+      padding: 6px 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background-color 0.2s;
+    }
+    .picker-button:hover {
+      background: #f0f0f0;
+    }
+    .picker-button.primary {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .picker-button.primary:hover {
+      background: #0056b3;
+    }
+  

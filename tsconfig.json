@@ -15,7 +15,9 @@
       "emitDeclarationOnly": false,         // Only .d.ts, no .js files
       "outDir": "./types"
     },
-    "files": [
-        "src/factories.ts"
+    "include": [
+        "src/**/*.ts",
+        "*.ts",
+        "*.tsx"
       ]
   }

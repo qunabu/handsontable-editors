@@ -53,7 +53,7 @@ const cellDefinition = {
     {
       input: HTMLInputElement;
       pickaday: Pikaday;
-      eventManager: Handsontable.EventManager;
+      //eventManager: Handsontable.EventManager;
       showDatepicker: (editor: ReturnType<typeof editorFactory>, event: Event | undefined) => void;
       hideDatepicker: (editor: ReturnType<typeof editorFactory>) => void;
         void;
@@ -72,8 +72,8 @@ const cellDefinition = {
       /**
        * Prevent recognizing clicking on datepicker as clicking outside of table.
        */
-      editor.eventManager = new Handsontable.EventManager(editor.container);
-      editor.eventManager.addEventListener(document.body, 'mousedown', (event) => {             
+      //editor.eventManager = new Handsontable.EventManager(editor.container);
+      editor.hot.rootDocument.addEventListener('mousedown', (event) => {             
         if (event.target && (event.target as HTMLElement).classList.contains( 'pika-day')) {
           editor.hideDatepicker(editor);
         }     
